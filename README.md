@@ -1,3 +1,6 @@
+# Project moved to https://github.com/SOPTIM/OpenCGMES
+
+
 # OpenCGMES (Draft)&#x20;
 
 OpenCGMES is an open-source Java toolkit designed for working with Common Grid Model Exchange Standard (CGMES) files, specifically those based on the IEC 61970 CIM RDF format. It uses Apache Jena under the hood to handle RDF data. This project is currently in draft form and may change over time. CGMES is a widely used standard in the energy industry to facilitate the exchange of grid model information, enabling better interoperability between different systems and tools. OpenCGMES aims to simplify and enhance the process of working with these complex file formats, empowering researchers, engineers, and developers in the power systems community.
