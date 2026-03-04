@@ -284,8 +284,23 @@ The module includes comprehensive test coverage:
 
 Run tests with:
 ```bash
-mvn test -pl jena-iec61970-552
+mvn -f cimxml/pom.xml test
 ```
+
+## Release Process
+
+`cimxml` uses GitHub Actions for CI/CD.
+
+- Pull requests and pushes to `main` run build and tests.
+- Pushes to `main` also publish `-SNAPSHOT` artifacts to GitHub Packages.
+- Pushing a tag in the format `cimxml-vX.Y.Z` triggers a release:
+  - publish signed artifacts to Maven Central (Sonatype Central Portal)
+  - publish release artifacts to GitHub Packages
+
+Versioning model:
+- `cimxml/pom.xml` on `main` remains `X.Y.Z-SNAPSHOT`
+- release tag defines the release version (`X.Y.Z`)
+- CI sets that release version in the workflow workspace for deployment only
 
 ## Dependencies
 

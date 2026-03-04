@@ -46,6 +46,16 @@
         <url>https://www.soptim.de/</url>
     </organization>
 
+    <developers>
+        <developer>
+            <id>soptim</id>
+            <name>SOPTIM AG</name>
+            <email>opencgmes@soptim.de</email>
+            <organization>SOPTIM AG</organization>
+            <organizationUrl>https://www.soptim.de/</organizationUrl>
+        </developer>
+    </developers>
+
     <scm>
         <connection>scm:git:https://github.com/SOPTIM/OpenCGMES.git</connection>
         <developerConnection>scm:git:https://github.com/SOPTIM/OpenCGMES.git</developerConnection>
@@ -84,6 +94,8 @@
         <ver.plugin.surefire>3.5.3</ver.plugin.surefire>
         <ver.plugin.source>3.3.1</ver.plugin.source>
         <ver.plugin.javadoc>3.11.3</ver.plugin.javadoc>
+        <ver.plugin.gpg>3.2.8</ver.plugin.gpg>
+        <ver.plugin.central-publishing>0.10.0</ver.plugin.central-publishing>
     </properties>
 
     <dependencies>
@@ -227,4 +239,46 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>central-release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.sonatype.central</groupId>
+                        <artifactId>central-publishing-maven-plugin</artifactId>
+                        <version>${ver.plugin.central-publishing}</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <publishingServerId>central</publishingServerId>
+                            <autoPublish>true</autoPublish>
+                            <waitUntil>published</waitUntil>
+                        </configuration>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>${ver.plugin.gpg}</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <gpgArguments>
+                                <arg>--pinentry-mode</arg>
+                                <arg>loopback</arg>
+                            </gpgArguments>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
