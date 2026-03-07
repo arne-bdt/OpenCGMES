@@ -24,6 +24,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
+import de.soptim.opencgmes.cimxml.graph.CimProfile;
 import de.soptim.opencgmes.cimxml.parser.CimXmlParser;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -32,11 +33,15 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.apache.jena.graph.Node;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Tests that verify all RDF Schema files from the ENTSO-E application-profiles-library can be
@@ -54,12 +59,19 @@ import org.junit.runners.Parameterized;
 @RunWith(Parameterized.class)
 public class TestApplicationProfilesLibrary {
 
+  private static final Logger LOG =
+      LoggerFactory.getLogger(TestApplicationProfilesLibrary.class);
+
   private static final Path PROFILES_ROOT =
       Paths.get("testing", "application-profiles-library");
 
   private static final List<String> EXCLUDED_PATHS = List.of(
       "NCP/PastReleases",
-      "CGMES/CurrentRelease/RDFS/Beta_501_Ed2_CD"
+      "CGMES/CurrentRelease/RDFS/Beta_501_Ed2_CD",
+      // SHACL constraint files (.rdf format) are not RDFS vocabulary profiles
+      "CGMES/CurrentRelease/SHACL",
+      // PROF files do not define a 'cim' namespace and are not CIM RDFS profiles
+      "NCP/CurrentRelease/PROF"
   );
 
   private final String directoryName;
@@ -110,31 +122,47 @@ public class TestApplicationProfilesLibrary {
     return EXCLUDED_PATHS.stream().anyMatch(normalized::startsWith);
   }
 
-  @Test
-  public void loadAllRdfSchemaFilesInDirectory() throws IOException {
-    assumeTrue("Submodule not available, skipping test: " + directoryName,
-        directoryPath != null);
-
-    CimXmlParser parser = new CimXmlParser();
-    List<Path> rdfFiles;
-    try (Stream<Path> paths = Files.list(directoryPath)) {
-      rdfFiles = paths
+  private static List<Path> listRdfFiles(Path directory) throws IOException {
+    try (Stream<Path> paths = Files.list(directory)) {
+      return paths
           .filter(Files::isRegularFile)
           .filter(p -> p.toString().endsWith(".rdf"))
           .sorted()
           .collect(Collectors.toList());
     }
+  }
 
-    assertFalse("No .rdf files found in " + directoryName, rdfFiles.isEmpty());
-
-    for (Path rdfFile : rdfFiles) {
+  /**
+   * Loads all .rdf files in the directory into the given parser. Some directories contain
+   * profiles with overlapping version IRIs (e.g. CGMES 2.4 "Augmented" equipment profiles)
+   * or multiple header profiles for the same CIM namespace. These duplicate registrations are
+   * logged but not treated as failures, since the files themselves parse correctly.
+   */
+  private static CimXmlParser loadProfiles(Path directory) throws IOException {
+    CimXmlParser parser = new CimXmlParser();
+    for (Path rdfFile : listRdfFiles(directory)) {
       try {
         parser.parseAndRegisterCimProfile(rdfFile);
-      } catch (Exception e) {
-        fail("Failed to load " + rdfFile.getFileName() + " in " + directoryName
-            + ": " + e.getMessage());
+      } catch (IllegalArgumentException e) {
+        if (e.getMessage() != null && (e.getMessage().contains("already registered"))) {
+          LOG.info("Skipping duplicate profile {}: {}", rdfFile.getFileName(), e.getMessage());
+        } else {
+          throw e;
+        }
       }
     }
+    return parser;
+  }
+
+  @Test
+  public void loadAllRdfSchemaFilesInDirectory() throws IOException {
+    assumeTrue("Submodule not available, skipping test: " + directoryName,
+        directoryPath != null);
+
+    List<Path> rdfFiles = listRdfFiles(directoryPath);
+    assertFalse("No .rdf files found in " + directoryName, rdfFiles.isEmpty());
+
+    CimXmlParser parser = loadProfiles(directoryPath);
 
     assertFalse("No profiles were registered from " + directoryName,
         parser.getCimProfileRegistry().getRegisteredProfiles().isEmpty());
@@ -145,21 +173,9 @@ public class TestApplicationProfilesLibrary {
     assumeTrue("Submodule not available, skipping test: " + directoryName,
         directoryPath != null);
 
-    CimXmlParser parser = new CimXmlParser();
-    List<Path> rdfFiles;
-    try (Stream<Path> paths = Files.list(directoryPath)) {
-      rdfFiles = paths
-          .filter(Files::isRegularFile)
-          .filter(p -> p.toString().endsWith(".rdf"))
-          .sorted()
-          .collect(Collectors.toList());
-    }
+    CimXmlParser parser = loadProfiles(directoryPath);
 
-    for (Path rdfFile : rdfFiles) {
-      parser.parseAndRegisterCimProfile(rdfFile);
-    }
-
-    for (var profile : parser.getCimProfileRegistry().getRegisteredProfiles()) {
+    for (CimProfile profile : parser.getCimProfileRegistry().getRegisteredProfiles()) {
       assertTrue("Profile graph should not be empty: " + profile.getDcatKeyword(),
           profile.size() > 0);
       assertNotNull("Profile should have a CIM namespace",
@@ -172,21 +188,9 @@ public class TestApplicationProfilesLibrary {
     assumeTrue("Submodule not available, skipping test: " + directoryName,
         directoryPath != null);
 
-    CimXmlParser parser = new CimXmlParser();
-    List<Path> rdfFiles;
-    try (Stream<Path> paths = Files.list(directoryPath)) {
-      rdfFiles = paths
-          .filter(Files::isRegularFile)
-          .filter(p -> p.toString().endsWith(".rdf"))
-          .sorted()
-          .collect(Collectors.toList());
-    }
+    CimXmlParser parser = loadProfiles(directoryPath);
 
-    for (Path rdfFile : rdfFiles) {
-      parser.parseAndRegisterCimProfile(rdfFile);
-    }
-
-    for (var profile : parser.getCimProfileRegistry().getRegisteredProfiles()) {
+    for (CimProfile profile : parser.getCimProfileRegistry().getRegisteredProfiles()) {
       if (!profile.isHeaderProfile()) {
         assertNotNull("Non-header profile should have version IRIs: "
             + profile.getDcatKeyword(), profile.getOwlVersionIris());
@@ -201,21 +205,9 @@ public class TestApplicationProfilesLibrary {
     assumeTrue("Submodule not available, skipping test: " + directoryName,
         directoryPath != null);
 
-    CimXmlParser parser = new CimXmlParser();
-    List<Path> rdfFiles;
-    try (Stream<Path> paths = Files.list(directoryPath)) {
-      rdfFiles = paths
-          .filter(Files::isRegularFile)
-          .filter(p -> p.toString().endsWith(".rdf"))
-          .sorted()
-          .collect(Collectors.toList());
-    }
+    CimXmlParser parser = loadProfiles(directoryPath);
 
-    for (Path rdfFile : rdfFiles) {
-      parser.parseAndRegisterCimProfile(rdfFile);
-    }
-
-    for (var profile : parser.getCimProfileRegistry().getRegisteredProfiles()) {
+    for (CimProfile profile : parser.getCimProfileRegistry().getRegisteredProfiles()) {
       if (!profile.isHeaderProfile()) {
         assertNotNull("Non-header profile should have a dcat:keyword: "
                 + profile.getOwlVersionIris(),
@@ -223,6 +215,33 @@ public class TestApplicationProfilesLibrary {
         assertFalse("Non-header profile keyword should not be empty: "
                 + profile.getOwlVersionIris(),
             profile.getDcatKeyword().isEmpty());
+      }
+    }
+  }
+
+  @Test
+  public void datatypeCoverageNonEmptyPropertyMaps() throws IOException {
+    assumeTrue("Submodule not available, skipping test: " + directoryName,
+        directoryPath != null);
+
+    CimXmlParser parser = loadProfiles(directoryPath);
+    CimProfileRegistry registry = parser.getCimProfileRegistry();
+
+    for (CimProfile profile : registry.getRegisteredProfiles()) {
+      if (profile.isHeaderProfile()) {
+        var headerProps = registry.getHeaderPropertiesAndDatatypes(
+            profile.getCimNamespace());
+        assertNotNull("Header property map should not be null for "
+            + profile.getCimNamespace(), headerProps);
+        assertFalse("Header property map should not be empty for "
+            + profile.getCimNamespace(), headerProps.isEmpty());
+      } else {
+        Set<Node> versionIris = profile.getOwlVersionIris();
+        var props = registry.getPropertiesAndDatatypes(versionIris);
+        assertNotNull("Property map should not be null for "
+            + profile.getDcatKeyword(), props);
+        assertFalse("Property map should not be empty for "
+            + profile.getDcatKeyword(), props.isEmpty());
       }
     }
   }
