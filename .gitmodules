@@ -1,3 +1,6 @@
 [submodule "cimxml/testing/application-profiles-library"]
 	path = cimxml/testing/application-profiles-library
 	url = https://github.com/entsoe/application-profiles-library.git
+[submodule "cimxml/testing/relicapgrid"]
+	path = cimxml/testing/relicapgrid
+	url = https://github.com/entsoe/relicapgrid.git
