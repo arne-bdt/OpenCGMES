@@ -19,6 +19,14 @@ This project includes the [ENTSO-E Application Profiles Library](https://github.
 (v1.1.1) as a Git submodule under `cimxml/testing/application-profiles-library/` for testing purposes only.
 The Application Profiles Library is licensed under the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0).
 
+This project includes the [ENTSO-E ReliCapGrid](https://github.com/entsoe/relicapgrid)
+(v1.0.0) as a Git submodule under `cimxml/testing/relicapgrid/` for testing purposes only.
+ReliCapGrid is a synthetic grid model containing CGMES instance data for testing CIM data exchange scenarios.
+ReliCapGrid is licensed under the
+[Creative Commons Attribution-ShareAlike 4.0 International License (CC-BY-SA-4.0)](https://creativecommons.org/licenses/by-sa/4.0/).
+Contributors include AspenTech, DIgSILENT, Energinet, gridDigIt, PSE, RTE, Siemens, Statnett,
+Svenska kraftnät, Swissgrid, Unicorn, and Valimate.
+
 ## License
 
 This project is licensed under the [Apache License 2.0](LICENSE).

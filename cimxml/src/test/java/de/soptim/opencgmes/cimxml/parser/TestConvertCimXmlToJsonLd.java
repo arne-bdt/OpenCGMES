@@ -16,10 +16,9 @@
  * limitations under the License.
  */
 
-package de.soptim.opencgmes.parser;
+package de.soptim.opencgmes.cimxml.parser;
 
 import de.soptim.opencgmes.cimxml.graph.CimProfile;
-import de.soptim.opencgmes.cimxml.parser.CimXmlParser;
 import de.soptim.opencgmes.cimxml.sparql.core.LinkedCimDatasetGraph;
 import java.io.BufferedOutputStream;
 import java.io.IOException;

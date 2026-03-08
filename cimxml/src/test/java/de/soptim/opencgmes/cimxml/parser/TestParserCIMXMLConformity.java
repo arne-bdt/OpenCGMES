@@ -16,12 +16,11 @@
  * limitations under the License.
  */
 
-package de.soptim.opencgmes.parser;
+package de.soptim.opencgmes.cimxml.parser;
 
 import de.soptim.opencgmes.cimxml.graph.CimProfile;
 import de.soptim.opencgmes.cimxml.graph.CimProfile17;
 import de.soptim.opencgmes.cimxml.graph.CimProfile18;
-import de.soptim.opencgmes.cimxml.parser.ReaderCIMXML_StAX_SR;
 import de.soptim.opencgmes.cimxml.parser.system.StreamCimXmlToDatasetGraph;
 import de.soptim.opencgmes.cimxml.rdfs.CimProfileRegistryStd;
 import org.apache.jena.datatypes.xsd.XSDDatatype;

@@ -66,7 +66,9 @@ public class TestApplicationProfilesLibrary {
       Paths.get("testing", "application-profiles-library");
 
   private static final List<String> EXCLUDED_PATHS = List.of(
-      "NCP/PastReleases",
+      // Error: Graphs ontology does not contain the required versionIRI and keyword for a
+      // CIM profile.
+      "NCP/PastReleases/v2-3-1/Original/RDFS",
       "CGMES/CurrentRelease/RDFS/Beta_501_Ed2_CD",
       // SHACL constraint files (.rdf format) are not RDFS vocabulary profiles
       "CGMES/CurrentRelease/SHACL",

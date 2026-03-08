@@ -16,9 +16,8 @@
  * limitations under the License.
  */
 
-package de.soptim.opencgmes.parser;
+package de.soptim.opencgmes.cimxml.parser;
 
-import de.soptim.opencgmes.cimxml.parser.ReaderCIMXML_StAX_SR;
 import de.soptim.opencgmes.cimxml.parser.system.StreamCimXmlToDatasetGraph;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.riot.RDFParser;
