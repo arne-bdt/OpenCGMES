@@ -20,8 +20,6 @@ package de.soptim.opencgmes.cimxml.rdfs;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
 import de.soptim.opencgmes.cimxml.graph.CimProfile;
@@ -89,6 +87,7 @@ public class TestApplicationProfilesLibrary {
         testCases.add(new Object[]{
             "application-profiles-library folder not found " + folder, null
         });
+        continue;
       }
 
       List<Object[]> testCasesInFolder = new ArrayList<>();
@@ -98,7 +97,7 @@ public class TestApplicationProfilesLibrary {
             .filter(Files::isRegularFile)
             .filter(p -> p.toString().endsWith(".rdf"))
             .sorted()
-            .collect(Collectors.toList());
+            .toList();
 
         rdfFiles.stream()
             .map(Path::getParent)
@@ -106,7 +105,9 @@ public class TestApplicationProfilesLibrary {
             .sorted()
             .forEach(dir -> {
               String displayName = folder.toString();
-              testCases.add(new Object[]{displayName, dir});
+              var testCase = new Object[]{displayName, dir};
+              testCases.add(testCase);
+              testCasesInFolder.add(testCase);
             });
 
         if (testCasesInFolder.isEmpty()) {
@@ -173,8 +174,8 @@ public class TestApplicationProfilesLibrary {
     CimXmlParser parser = loadProfiles(directoryPath);
 
     for (CimProfile profile : parser.getCimProfileRegistry().getRegisteredProfiles()) {
-      assertTrue("Profile graph should not be empty: " + profile.getDcatKeyword(),
-          profile.size() > 0);
+      assertFalse("Profile graph should not be empty: " + profile.getDcatKeyword(),
+          profile.isEmpty());
       assertNotNull("Profile should have a CIM namespace",
           profile.getCimNamespace());
     }
