@@ -105,9 +105,7 @@ public class TestApplicationProfilesLibrary {
             .sorted()
             .forEach(dir -> {
               String displayName = folder.toString();
-              var testCase = new Object[]{displayName, dir};
-              testCases.add(testCase);
-              testCasesInFolder.add(testCase);
+              testCasesInFolder.add( new Object[]{displayName, dir});
             });
 
         if (testCasesInFolder.isEmpty()) {
